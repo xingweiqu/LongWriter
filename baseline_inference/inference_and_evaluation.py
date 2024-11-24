@@ -120,13 +120,13 @@ def evaluate_response(model, tokenizer, title, context, dimensions, sections, he
                                 """
         
                 d_text = dimensions[level][d]
-                evaluate_prompt = f"Give you the title of the paper: {title} \n\n Text: {context_str}. \n\n {d_text}"
+                evaluate_prompt = f"Give you the title of the paper: {title} \n\n Text: {context_str}. \n\n Instruciton: {headlines} \n\n {d_text}"
                 score_response = generate_response(model, tokenizer, evaluate_prompt, system_prompt)
                 score_response = load_response_json(score_response)
                 score_responses[d] = score_response['score']
 
         elif level == 'section-level':
-            for d in dimensions[level]:
+            for i, d in enumerate(dimensions[level]):
                 system_prompt = """You are an expert AI assistant and you need to generate a score of the section from a given dimension, and you just need to give me score and do not need to generate explanation.
 
                                 Example of a valid JSON response:
@@ -147,7 +147,7 @@ def evaluate_response(model, tokenizer, title, context, dimensions, sections, he
                     rest_context = '\n\n'.join(context[1:])
 
                 if d == 'Instruction-following-sec':
-                    evaluate_prompt = f"Give you the title of the paper: {title}, Introduction: {Introduction}, Main Body: {rest_context} \n\n {d_text}"
+                    evaluate_prompt = f"Give you the title of the paper: {title}, Introduction: {headlines[i]}, Main Body: {rest_context} \n\n {d_text}"
                     score_response = generate_response(model, tokenizer, evaluate_prompt, system_prompt)
                     score_response = load_response_json(score_response)
                     score_responses[d] = score_response['score']
