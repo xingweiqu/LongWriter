@@ -120,7 +120,10 @@ def evaluate_response(model, tokenizer, title, context, dimensions, sections, he
                                 """
         
                 d_text = dimensions[level][d]
-                evaluate_prompt = f"Give you the title of the paper: {title} \n\n Text: {context_str}. \n\n Instruciton: {headlines} \n\n {d_text}"
+                if d == 'Instruction-following-sec':
+                    evaluate_prompt = f"Give you the title of the paper: {title} \n\n Text: {context_str}. \n\n Instruciton: {headlines} \n\n {d_text}"
+                else:
+                    evaluate_prompt = f"Give you the title of the paper: {title} \n\n Text: {context_str}. \n\n {d_text}"
                 score_response = generate_response(model, tokenizer, evaluate_prompt, system_prompt)
                 score_response = load_response_json(score_response)
                 score_responses[d] = score_response['score']
