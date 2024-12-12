@@ -11,15 +11,28 @@ client = OpenAI(base_url=base_url, api_key=api_key)
 dataset_path = "/map-vepfs/shuyue/xw_huggingface/parsed_arxiv/data"
 ds = load_dataset(dataset_path, revision="2023-08-20")
 
+# Helper function: Extract abstract
+def extract_abstract(text):
+    # Define pattern to capture abstract
+    abstract_pattern = r"(?i)(?<=\nAbstract\n)(.+?)(?=\n\n|\u00a7|\Z)"
+    abstract_match = re.search(abstract_pattern, text, re.DOTALL)
+    if abstract_match:
+        return abstract_match.group(1).strip()
+    return ""
 
 # Helper function: Split text into a hierarchy of sections
 def split_text_into_hierarchy(text):
-    heading_pattern = re.compile(r"^(§(?:\.\§)*)\s*(.*)$")
+    heading_pattern = re.compile(r"^(\u00a7(?:\.\u00a7)*)\s*(.*)$")
     lines = text.strip().split("\n")
 
     hierarchy = []
     stack = []
     current_content = ""
+
+    # Extract abstract and prepend it as a special section
+    abstract = extract_abstract(text)
+    if abstract:
+        hierarchy.append({"title": "Abstract", "content": abstract, "subsections": []})
 
     for line in lines:
         line = line.rstrip()
@@ -32,7 +45,7 @@ def split_text_into_hierarchy(text):
 
             marker = match.group(1)
             title = match.group(2).strip()
-            level = marker.count("§")
+            level = marker.count("\u00a7")
 
             node = {"title": title, "content": "", "subsections": []}
 
@@ -50,7 +63,6 @@ def split_text_into_hierarchy(text):
         stack[-1]["content"] += current_content.strip() + "\n"
 
     return hierarchy
-
 
 def merge_hierarchy_to_markdown(hierarchy, level=1):
     merged_text = ""
